@@ -137,10 +137,15 @@ if (a > 30) {
 >常用的条件域：
 >
 >EQ􏰌：equal􏰙􏱈􏱥
+>
 >NE􏰌：not equal􏰙􏱦􏱈􏱥
+>
 >GT􏰌：great than􏰙􏱧􏰏
+>
 >GE􏰌：greate equal􏰙􏱧􏰏􏱥􏰏
+>
 >LT：􏰌less than􏰙􏱨􏰏
+>
 >LE：􏰌less equal􏰙􏱨􏰏􏱥􏰏
 
 ![条件域](./条件域.png)
