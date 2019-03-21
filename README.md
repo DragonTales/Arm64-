@@ -61,6 +61,10 @@ ret
 
 ##### cmp、条件域、cpsr寄存器：
 
+>CBZ  比较（Compare），如果结果为零（Zero）就转移（只能跳到后面的指令）
+>
+>CBNZ 比较，如果结果非零（Non Zero）就转移（只能跳到后面的指令）
+
 ```asm
 _test:
 mov x1, #0x9
