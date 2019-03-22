@@ -31,6 +31,76 @@
 >函数参数问题
 >
 >一般来说，函数参数（整形参数、地址）不超过8个的话，会存放在x0--x7里面，如果是浮点型数据or超过八个，会在调用函数之前将这些参数入栈，函数调用完之后出栈。
+>
+>如果是结构体，参数会放在r0--r7这个几个向量寄存器中，具体见代码：
+
+```c
+struct TestOne {
+    double a;
+    double b;
+    double number;
+    double type;
+}TestOne;
+
+void test(struct TestOne x) {
+    x.a = 10;
+    x.b = 20;
+    x.number = 2;
+    x.type = 11;
+}
+
+
+void call() {
+    struct TestOne x = {0,0,0,0};
+    test(x);
+}
+```
+
+​	转成的汇编代码：
+
+```asm
+_test:                                  ; @test
+	sub	sp, sp, #32             ; =32
+	fmov	d4, #11.00000000
+	fmov	d5, #2.00000000
+	fmov	d6, #20.00000000
+	fmov	d7, #10.00000000
+	str	d0, [sp]
+	str	d1, [sp, #8]
+	str	d2, [sp, #16]
+	str	d3, [sp, #24]			;存储d0--d3寄存器值(参数)
+	str	d7, [sp]
+	str	d6, [sp, #8]
+	str	d5, [sp, #16]
+	str	d4, [sp, #24]
+	add	sp, sp, #32             ; =32
+	ret
+
+
+	.globl	_call                   ; -- Begin function call
+_call:                                  ; @call
+	sub	sp, sp, #48             ; =48
+	stp	x29, x30, [sp, #32]     ; 8-byte Folded Spill
+	add	x29, sp, #32            ; =32
+	mov	x8, #0					;注意这，结构体地址先存放在x8中
+	str	x8, [sp, #24]
+	str	x8, [sp, #16]
+	str	x8, [sp, #8]
+	str	x8, [sp]				;在调用test函数之前，将结构体各成员变量都存进了栈空间
+	ldr	d3, [sp, #24]
+	ldr	d2, [sp, #16]
+	ldr	d1, [sp, #8]
+	ldr	d0, [sp]				;从栈空间中读取到d0--d3向量寄存器中，当做参数传递给test函数
+	bl	_test					
+	ldp	x29, x30, [sp, #32]     ; 8-byte Folded Reload
+	add	sp, sp, #48             ; =48
+	ret
+
+
+;可以先看完后面的堆栈平衡再来理解这段代码
+```
+
+
 
 >X8，间接寻址结果，当返回值（比如结构体size）大于16个字节的时候，该返回内容会被存到一个内存地址当中，然后这个内存地址的值会存入寄存器x8。后续Caller函数在使用该返回值的时候，会从X8寄存器中取出内存地址，并从内存地址取出内容的值。
 >
